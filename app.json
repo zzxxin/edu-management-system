@@ -1,0 +1,61 @@
+{
+  "name": "教务管理系统",
+  "description": "基于 Laravel 10 的教务管理系统",
+  "repository": "https://github.com/your-username/edu-management-system",
+  "keywords": ["laravel", "php", "postgresql", "omise"],
+  "success_url": "/",
+  "env": {
+    "APP_KEY": {
+      "description": "Laravel 应用密钥",
+      "generator": "secret"
+    },
+    "APP_ENV": {
+      "description": "应用环境",
+      "value": "production"
+    },
+    "APP_DEBUG": {
+      "description": "调试模式",
+      "value": "false"
+    },
+    "APP_URL": {
+      "description": "应用 URL（部署后会自动设置）"
+    },
+    "OMISE_PUBLIC_KEY": {
+      "description": "Omise 公钥（生产环境）",
+      "required": true
+    },
+    "OMISE_SECRET_KEY": {
+      "description": "Omise 私钥（生产环境）",
+      "required": true
+    },
+    "OMISE_CURRENCY": {
+      "description": "货币代码",
+      "value": "thb"
+    },
+    "LOG_CHANNEL": {
+      "description": "日志通道",
+      "value": "errorlog"
+    },
+    "LOG_LEVEL": {
+      "description": "日志级别",
+      "value": "error"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    "heroku-postgresql:mini"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/php"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "php artisan migrate --force && php artisan passport:install --force"
+  }
+}
