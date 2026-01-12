@@ -1,0 +1,292 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "教务管理系统 API 文档",
+        "description": "教务管理系统 API 文档\n\n本系统主要提供 Web 界面，API 端点主要用于第三方服务集成（如 Omise Webhook）。\n\n## 认证说明\n\n本系统使用 Laravel Session 认证，Web 界面通过 Blade 模板提供。\nAPI 端点主要用于 Webhook 回调，使用签名验证确保安全性。",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api",
+            "description": "本地开发环境"
+        },
+        {
+            "url": "https://your-domain.com/api",
+            "description": "生产环境"
+        }
+    ],
+    "paths": {
+        "/api/omise/webhook": {
+            "post": {
+                "tags": [
+                    "Webhook"
+                ],
+                "summary": "Omise Webhook 回调",
+                "description": "处理 Omise 支付平台的 Webhook 事件。接收支付创建和完成事件，自动更新账单和支付记录状态。支持幂等性处理。",
+                "operationId": "cfdd5f73fa3cef976ebdd0db5706e600",
+                "requestBody": {
+                    "description": "Omise Webhook 事件数据",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OmiseWebhookEvent"
+                            },
+                            "examples": {
+                                "charge_create": {
+                                    "summary": "支付创建事件",
+                                    "value": {
+                                        "key": "charge.create",
+                                        "data": {
+                                            "id": "chrg_test_1234567890",
+                                            "status": "pending",
+                                            "currency": "JPY",
+                                            "amount": 1000,
+                                            "metadata": {
+                                                "invoice_id": "1",
+                                                "course_id": "1",
+                                                "student_id": "1",
+                                                "year_month": "202601"
+                                            },
+                                            "source": {
+                                                "type": "card"
+                                            }
+                                        }
+                                    }
+                                },
+                                "charge_complete_success": {
+                                    "summary": "支付成功事件",
+                                    "value": {
+                                        "key": "charge.complete",
+                                        "data": {
+                                            "id": "chrg_test_1234567890",
+                                            "status": "successful",
+                                            "currency": "JPY",
+                                            "amount": 1000,
+                                            "paid_at": "2026-01-11T16:35:32Z",
+                                            "metadata": {
+                                                "invoice_id": "1",
+                                                "course_id": "1",
+                                                "student_id": "1",
+                                                "year_month": "202601"
+                                            },
+                                            "source": {
+                                                "type": "card"
+                                            }
+                                        }
+                                    }
+                                },
+                                "charge_complete_failed": {
+                                    "summary": "支付失败事件",
+                                    "value": {
+                                        "key": "charge.complete",
+                                        "data": {
+                                            "id": "chrg_test_1234567890",
+                                            "status": "failed",
+                                            "currency": "JPY",
+                                            "amount": 1000,
+                                            "failure_message": "Card declined",
+                                            "metadata": {
+                                                "invoice_id": "1",
+                                                "course_id": "1",
+                                                "student_id": "1",
+                                                "year_month": "202601"
+                                            },
+                                            "source": {
+                                                "type": "card"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "处理成功或忽略的事件",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "success",
+                                                "ignored"
+                                            ],
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "签名验证失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid signature"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Processing failed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OmiseWebhookSignature": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "OmiseWebhookEvent": {
+                "required": [
+                    "key",
+                    "data"
+                ],
+                "properties": {
+                    "key": {
+                        "description": "OpenAPI Schema 定义",
+                        "type": "string",
+                        "enum": [
+                            "charge.create",
+                            "charge.complete"
+                        ],
+                        "example": "charge.complete"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/OmiseCharge"
+                    }
+                },
+                "type": "object"
+            },
+            "OmiseCharge": {
+                "required": [
+                    "id",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Omise Charge ID",
+                        "type": "string",
+                        "example": "chrg_test_1234567890"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "successful",
+                            "failed"
+                        ],
+                        "example": "successful"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "enum": [
+                            "JPY",
+                            "THB",
+                            "SGD",
+                            "USD"
+                        ],
+                        "example": "JPY"
+                    },
+                    "amount": {
+                        "description": "支付金额（最小货币单位）",
+                        "type": "integer",
+                        "example": 1000
+                    },
+                    "paid_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-01-11T16:35:32Z",
+                        "nullable": true
+                    },
+                    "failure_message": {
+                        "type": "string",
+                        "example": "Card declined",
+                        "nullable": true
+                    },
+                    "metadata": {
+                        "required": [
+                            "invoice_id"
+                        ],
+                        "properties": {
+                            "invoice_id": {
+                                "type": "string",
+                                "example": "1"
+                            },
+                            "course_id": {
+                                "type": "string",
+                                "example": "1"
+                            },
+                            "student_id": {
+                                "type": "string",
+                                "example": "1"
+                            },
+                            "year_month": {
+                                "type": "string",
+                                "example": "202601"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "source": {
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "card",
+                                    "internet_banking"
+                                ],
+                                "example": "card"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "OmiseWebhookSignature": {
+                "type": "apiKey",
+                "description": "Omise Webhook 签名。使用 HMAC-SHA256 算法，密钥为 Omise Secret Key。",
+                "name": "X-Omise-Signature",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Webhook",
+            "description": "Omise 支付 Webhook 回调"
+        }
+    ]
+}
