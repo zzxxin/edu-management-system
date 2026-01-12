@@ -21,8 +21,8 @@ class DashboardController extends Controller
 
         $stats = [
             'courses_count' => $student->courses()->count(),
-            'invoices_sent' => $student->invoices()->where('status', 'sent')->count(),
-            'invoices_paid' => $student->invoices()->where('status', 'paid')->count(),
+            'invoices_sent' => $student->getInvoiceCountByStatus('sent'),
+            'invoices_paid' => $student->getInvoiceCountByStatus('paid'),
         ];
 
         return view('student.dashboard', compact('stats'));

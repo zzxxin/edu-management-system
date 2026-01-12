@@ -63,4 +63,37 @@ class Teacher extends Authenticatable
     {
         return $this->hasMany(Course::class);
     }
+
+    /**
+     * 教师管理的学生
+     *
+     * @return HasMany
+     */
+    public function students(): HasMany
+    {
+        return $this->hasMany(Student::class);
+    }
+
+    /**
+     * 获取教师的所有账单（通过课程）
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function invoices()
+    {
+        return $this->hasManyThrough(Invoice::class, Course::class);
+    }
+
+    /**
+     * 获取指定状态的账单数量
+     *
+     * @param string $status 状态
+     * @return int
+     */
+    public function getInvoiceCountByStatus(string $status): int
+    {
+        return Invoice::forTeacher($this->id)
+            ->byStatus($status)
+            ->count();
+    }
 }

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Teacher;
-use App\Models\Student;
+use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -16,6 +14,21 @@ use Illuminate\Validation\ValidationException;
  */
 class AuthController extends Controller
 {
+    /**
+     * @var AuthService
+     */
+    protected $authService;
+
+    /**
+     * 构造函数
+     *
+     * @param AuthService $authService
+     */
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     /**
      * 显示登录页面
      *
@@ -35,26 +48,26 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
+            'email' => 'required|email|max:255',
+            'password' => 'required|string|min:1',
+        ], [
+            'email.required' => '邮箱不能为空。',
+            'email.email' => '邮箱格式不正确。',
+            'email.max' => '邮箱长度不能超过255个字符。',
+            'password.required' => '密码不能为空。',
+            'password.string' => '密码必须是字符串。',
+            'password.min' => '密码不能为空。',
         ]);
 
-        $credentials = $request->only('email', 'password');
+        $result = $this->authService->attemptLogin(
+            $request->input('email'),
+            $request->input('password'),
+            $request->boolean('remember')
+        );
 
-        // 尝试从teacher表登录
-        $teacher = Teacher::where('email', $credentials['email'])->first();
-        if ($teacher && Hash::check($credentials['password'], $teacher->password)) {
-            Auth::guard('teacher')->login($teacher, $request->boolean('remember'));
+        if ($result['success']) {
             $request->session()->regenerate();
-            return redirect()->intended(route('teacher.dashboard'));
-        }
-
-        // 尝试从student表登录
-        $student = Student::where('email', $credentials['email'])->first();
-        if ($student && Hash::check($credentials['password'], $student->password)) {
-            Auth::guard('student')->login($student, $request->boolean('remember'));
-            $request->session()->regenerate();
-            return redirect()->intended(route('student.dashboard'));
+            return redirect()->intended($result['redirect']);
         }
 
         throw ValidationException::withMessages([
@@ -70,13 +83,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // 登出当前用户（无论是teacher还是student）
-        if (Auth::guard('teacher')->check()) {
-            Auth::guard('teacher')->logout();
-        }
-        if (Auth::guard('student')->check()) {
-            Auth::guard('student')->logout();
-        }
+        $this->authService->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

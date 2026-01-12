@@ -68,4 +68,60 @@ class Course extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    /**
+     * 查询指定教师的课程
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $teacherId 教师ID
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForTeacher($query, int $teacherId)
+    {
+        return $query->where('teacher_id', $teacherId);
+    }
+
+    /**
+     * 查询有学生的课程
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithStudents($query)
+    {
+        return $query->has('students');
+    }
+
+    /**
+     * 按创建时间倒序排列
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeLatest($query)
+    {
+        return $query->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * 预加载学生关联
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithStudentsRelation($query)
+    {
+        return $query->with('students');
+    }
+
+    /**
+     * 验证课程是否属于指定教师
+     *
+     * @param int $teacherId 教师ID
+     * @return bool
+     */
+    public function belongsToTeacher(int $teacherId): bool
+    {
+        return $this->teacher_id === $teacherId;
+    }
 }

@@ -134,4 +134,118 @@ class Invoice extends Model
     {
         return $this->status === self::STATUS_REJECTED;
     }
+
+    /**
+     * 查询指定教师的所有账单
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $teacherId 教师ID
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForTeacher($query, int $teacherId)
+    {
+        return $query->whereHas('course', function ($q) use ($teacherId) {
+            $q->where('teacher_id', $teacherId);
+        });
+    }
+
+    /**
+     * 查询指定学生的账单
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $studentId 学生ID
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForStudent($query, int $studentId)
+    {
+        return $query->where('student_id', $studentId);
+    }
+
+    /**
+     * 查询指定状态的账单
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $status 状态
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByStatus($query, string $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * 查询多个状态的账单
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param array $statuses 状态数组
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByStatuses($query, array $statuses)
+    {
+        return $query->whereIn('status', $statuses);
+    }
+
+    /**
+     * 排除待发送状态的账单
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeExcludePending($query)
+    {
+        return $query->where('status', '!=', self::STATUS_PENDING);
+    }
+
+    /**
+     * 查询指定课程和学生的账单
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $courseId 课程ID
+     * @param int $studentId 学生ID
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForCourseAndStudent($query, int $courseId, int $studentId)
+    {
+        return $query->where('course_id', $courseId)
+            ->where('student_id', $studentId);
+    }
+
+    /**
+     * 按创建时间倒序排列
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeLatest($query)
+    {
+        return $query->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * 预加载关联数据（用于列表）
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with(['course', 'student']);
+    }
+
+    /**
+     * 预加载关联数据（用于详情）
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithDetailRelations($query)
+    {
+        return $query->with([
+            'course.teacher',
+            'student',
+            'payments' => function ($q) {
+                $q->orderBy('created_at', 'desc');
+            }
+        ]);
+    }
 }

@@ -88,4 +88,51 @@ class Student extends Authenticatable
     {
         return $this->hasMany(Invoice::class);
     }
+
+    /**
+     * 查询指定教师的学生
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $teacherId 教师ID
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForTeacher($query, int $teacherId)
+    {
+        return $query->where('teacher_id', $teacherId);
+    }
+
+    /**
+     * 按姓名排序
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOrderByName($query)
+    {
+        return $query->orderBy('name');
+    }
+
+    /**
+     * 获取指定状态的账单数量
+     *
+     * @param string $status 状态
+     * @return int
+     */
+    public function getInvoiceCountByStatus(string $status): int
+    {
+        return $this->invoices()
+            ->where('status', $status)
+            ->count();
+    }
+
+    /**
+     * 验证账单是否属于该学生
+     *
+     * @param Invoice $invoice 账单对象
+     * @return bool
+     */
+    public function ownsInvoice(Invoice $invoice): bool
+    {
+        return $invoice->student_id === $this->id;
+    }
 }
