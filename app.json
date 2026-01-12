@@ -1,7 +1,7 @@
 {
   "name": "教务管理系统",
   "description": "基于 Laravel 10 的教务管理系统",
-  "repository": "https://github.com/your-username/edu-management-system",
+  "repository": "https://github.com/zzxxin/edu-management-system",
   "keywords": ["laravel", "php", "postgresql", "omise"],
   "success_url": "/",
   "env": {
@@ -30,7 +30,7 @@
     },
     "OMISE_CURRENCY": {
       "description": "货币代码",
-      "value": "thb"
+      "value": "jpy"
     },
     "LOG_CHANNEL": {
       "description": "日志通道",
@@ -56,6 +56,6 @@
     }
   ],
   "scripts": {
-    "postdeploy": "php artisan migrate --force && php artisan passport:install --force"
+    "postdeploy": "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache"
   }
 }
