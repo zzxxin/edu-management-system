@@ -98,7 +98,11 @@ class InvoiceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'course_id' => 'required|exists:courses,id',
+            'course_id' => 'required|integer|exists:courses,id',
+        ], [
+            'course_id.required' => '请选择要创建账单的课程。',
+            'course_id.integer' => '课程ID必须是整数。',
+            'course_id.exists' => '所选课程不存在。',
         ]);
 
         $teacher = Auth::guard('teacher')->user();
