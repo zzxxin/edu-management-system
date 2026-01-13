@@ -144,17 +144,8 @@ php artisan migrate
 - `invoices` - 账单表
 - `payments` - 支付记录表
 
-### 7. 编译前端资源（可选）
 
-```bash
-# 开发环境
-npm run dev
-
-# 生产环境
-npm run build
-```
-
-### 8. 启动开发服务器
+### 7. 启动开发服务器
 
 ```bash
 php artisan serve
@@ -289,14 +280,6 @@ POST /api/omise/webhook
 - ✅ `OMISE_CURRENCY` - 默认货币代码
 - ✅ `APP_TIMEZONE` - 时区设置
 
-## 📝 代码规范
-
-- 遵循 PSR-12 编码标准
-- 使用 PHPDoc 注释
-- 业务逻辑封装在模型和服务类中
-- Controller 只负责调用和响应处理
-- 避免 N+1 查询问题
-- 使用框架自带功能，不重新封装框架核心功能
 
 ## 🔒 安全特性
 
