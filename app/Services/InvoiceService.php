@@ -21,8 +21,8 @@ class InvoiceService
      */
     public function createInvoicesForCourse(Course $course): array
     {
-        // 获取该课程的所有学生
-        $studentIds = $course->students->pluck('id')->toArray();
+        // 获取该课程的所有学生（SoftDeletes 会自动过滤已删除的学生）
+        $studentIds = $course->students()->pluck('students.id')->toArray();
 
         if (empty($studentIds)) {
             return [

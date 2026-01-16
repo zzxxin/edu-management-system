@@ -67,12 +67,14 @@ class Invoice extends Model
 
     /**
      * 账单所属的学生
+     * 
+     * 注意：使用 withTrashed() 确保即使学生被删除，账单仍然可以显示学生信息
      *
      * @return BelongsTo
      */
     public function student(): BelongsTo
     {
-        return $this->belongsTo(Student::class);
+        return $this->belongsTo(Student::class)->withTrashed();
     }
 
     /**

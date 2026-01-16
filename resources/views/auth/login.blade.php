@@ -25,6 +25,13 @@
                         <h2 class="text-center mb-4">教务管理系统</h2>
                         <h4 class="text-center mb-4">登录</h4>
 
+                        @if(session('success'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
+
                         @if(session('error'))
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 {{ session('error') }}
@@ -47,17 +54,18 @@
                             @csrf
 
                             <div class="mb-3">
-                                <label for="email" class="form-label">邮箱</label>
-                                <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                       id="email" name="email" value="{{ old('email') }}" required autofocus>
-                                @error('email')
+                                <label for="login" class="form-label">用户名/邮箱</label>
+                                <input type="text" class="form-control @error('login') is-invalid @enderror"
+                                       id="login" name="login" value="{{ old('login') }}"
+                                       placeholder="请输入用户名或邮箱" required autofocus>
+                                @error('login')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">密码</label>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                <input type="password" class="form-control @error('password') is-invalid @enderror"
                                        id="password" name="password" required>
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -73,7 +81,7 @@
                         </form>
 
                         <p class="text-center mt-3 text-muted small">
-                            支持教师和学生登录
+                            教师支持用户名或邮箱登录，学生使用邮箱登录
                         </p>
                     </div>
                 </div>

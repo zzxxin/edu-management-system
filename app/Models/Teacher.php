@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * 教师模型
  * 
  * 教师可以使用后台管理系统和教务管理系统
+ * 现在使用 admin_users 表，通过 user_type='teacher' 来标识
  */
 class Teacher extends Authenticatable
 {
@@ -21,7 +22,7 @@ class Teacher extends Authenticatable
      *
      * @var string
      */
-    protected $table = 'teachers';
+    protected $table = 'admin_users';
 
     /**
      * 可批量赋值的属性
@@ -32,6 +33,7 @@ class Teacher extends Authenticatable
         'name',
         'email',
         'password',
+        'user_type',
     ];
 
     /**
@@ -51,8 +53,20 @@ class Teacher extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        // 注意：password 不使用 'hashed' cast，因为数据库中存储的已经是哈希值
     ];
+
+    /**
+     * Boot 方法：设置全局作用域，只查询 user_type='teacher' 的记录
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope('teachers', function ($builder) {
+            $builder->where('user_type', User::USER_TYPE_TEACHER);
+        });
+    }
 
     /**
      * 教师创建的课程

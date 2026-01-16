@@ -29,9 +29,12 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// 认证路由
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+// 认证路由（已登录用户访问登录页会自动跳转）
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // 教师路由组

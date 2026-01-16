@@ -139,6 +139,7 @@ class CourseService
             }
         }
 
+        // 过滤掉已删除的学生
         return Student::forTeacher($teacherId)
             ->whereIn('id', $studentIds)
             ->pluck('id')

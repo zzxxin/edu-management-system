@@ -39,17 +39,18 @@ class Course extends Model
     ];
 
     /**
-     * 课程所属的教师
+     * 课程所属的教师（从 admin_users 表中 user_type='teacher' 的用户）
      *
      * @return BelongsTo
      */
     public function teacher(): BelongsTo
     {
-        return $this->belongsTo(Teacher::class);
+        return $this->belongsTo(User::class, 'teacher_id');
     }
 
     /**
      * 课程的学生（多对多关系）
+     * 注意：由于 Student 模型使用了 SoftDeletes，已删除的学生会自动被过滤
      *
      * @return BelongsToMany
      */

@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,16 +12,22 @@ class RedirectIfAuthenticated
     /**
      * Handle an incoming request.
      *
+     * 如果用户已经登录，根据不同的guard跳转到对应的dashboard
+     *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
-        $guards = empty($guards) ? [null] : $guards;
+        $guards = empty($guards) ? ['teacher', 'student'] : $guards;
 
-        foreach ($guards as $guard) {
-            if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
-            }
+        // 检查教师是否已登录
+        if (in_array('teacher', $guards) && Auth::guard('teacher')->check()) {
+            return redirect()->route('teacher.dashboard');
+        }
+
+        // 检查学生是否已登录
+        if (in_array('student', $guards) && Auth::guard('student')->check()) {
+            return redirect()->route('student.dashboard');
         }
 
         return $next($request);

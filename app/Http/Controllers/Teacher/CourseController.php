@@ -57,7 +57,7 @@ class CourseController extends Controller
     {
         $teacher = Auth::guard('teacher')->user();
 
-        // 获取该教师管理的学生列表
+        // 获取该教师管理的学生列表（过滤已删除的学生）
         $students = Student::forTeacher($teacher->id)
             ->orderByName()
             ->get();
@@ -148,7 +148,7 @@ class CourseController extends Controller
             abort(403, '无权访问此课程。');
         }
 
-        // 获取该教师管理的学生列表
+        // 获取该教师管理的学生列表（过滤已删除的学生）
         $students = Student::forTeacher($teacher->id)
             ->orderByName()
             ->get();

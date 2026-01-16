@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Student extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * 表名
@@ -33,6 +34,7 @@ class Student extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'teacher_id',     // 所属教师ID
@@ -55,17 +57,18 @@ class Student extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'deleted_at' => 'datetime',
+        // 注意：password 不使用 'hashed' cast，因为数据库中存储的已经是哈希值
     ];
 
     /**
-     * 学生所属的教师（一对多关系）
+     * 学生所属的教师（从 admin_users 表中 user_type='teacher' 的用户）
      *
      * @return BelongsTo
      */
     public function teacher(): BelongsTo
     {
-        return $this->belongsTo(Teacher::class);
+        return $this->belongsTo(User::class, 'teacher_id');
     }
 
     /**
